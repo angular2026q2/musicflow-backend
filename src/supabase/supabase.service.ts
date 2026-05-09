@@ -21,7 +21,7 @@ export class SupabaseService {
     });
   }
 
-  get db(): SupabaseClient {
+  get db(): SupabaseClient<Database> {
     return this.client;
   }
 }
