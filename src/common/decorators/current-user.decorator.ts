@@ -1,4 +1,10 @@
-import { SetMetadata } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { AuthUser } from '@auth/strategies/jwt.strategy';
 
-export const CurrentUser = (...args: string[]) =>
-  SetMetadata('current-user', args);
+export const CurrentUser = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): AuthUser => {
+    const request = ctx.switchToHttp().getRequest<{ user: AuthUser }>();
+
+    return request.user;
+  },
+);

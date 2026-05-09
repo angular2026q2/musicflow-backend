@@ -1,4 +1,56 @@
-import { Controller } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { AuthResponse, AuthService } from '@auth/auth.service';
+import { SignInDto } from '@auth/dto/sign-in.dto';
+import { SignUpDto } from '@auth/dto/sign-up.dto';
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import type { AuthUser } from '@auth/strategies/jwt.strategy';
+import { CurrentUser } from '@common/decorators/current-user.decorator';
 
+@ApiTags('Auth')
 @Controller('auth')
-export class AuthController {}
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @Post('sign-up')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({ status: 201, description: 'User successfully registered' })
+  @ApiResponse({ status: 409, description: 'Username or email already taken' })
+  async signUp(@Body() dto: SignUpDto): Promise<AuthResponse> {
+    return this.authService.signUp(dto);
+  }
+
+  @Post('sign-in')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Sign in with email and password' })
+  @ApiResponse({ status: 200, description: 'User successfully signed in' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  async signIn(@Body() dto: SignInDto): Promise<AuthResponse> {
+    return this.authService.signIn(dto);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get current authenticated user' })
+  @ApiResponse({ status: 200, description: 'Current user profile' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMe(@CurrentUser() user: AuthUser): Promise<AuthUser> {
+    return this.authService.getMe(user.id);
+  }
+}
