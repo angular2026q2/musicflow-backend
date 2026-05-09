@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database.types';
 
 @Injectable()
 export class SupabaseService {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly client: SupabaseClient<any, any, any>;
+  private readonly client: SupabaseClient<Database>;
 
   constructor(private readonly configService: ConfigService) {
     const url = this.configService.getOrThrow<string>('SUPABASE_URL');
