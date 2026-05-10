@@ -77,6 +77,57 @@ export class UsersService {
   }
 
   /**
+   * @Notes Uploads a user's avatar image to Supabase Storage.
+   * @Notes Stores the file at path `{userId}/avatar.{ext}` in the `avatars` bucket.
+   * @Notes Updates the `avatar_url` field in the user's profile after upload.
+   * @param userId - The UUID of the user
+   * @param file - The uploaded file buffer from multer
+   * @returns The updated profile record with the new avatar_url
+   * @throws ConflictException if the upload or profile update fails
+   */
+  async uploadAvatar(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<UserProfile> {
+    const ext = (file.originalname.split('.').pop() ?? 'jpg').toLowerCase();
+    const filePath = `${userId}/avatar.${ext}`;
+
+    const { error: uploadError } = await this.supabaseService.db.storage
+      .from('avatars')
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new ConflictException({
+        message: 'Failed to upload avatar',
+        error: uploadError,
+      });
+    }
+
+    const { data: urlData } = this.supabaseService.db.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    const { data, error: updateError } = await this.supabaseService.db
+      .from('profiles')
+      .update({ avatar_url: urlData.publicUrl })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (updateError ?? !data) {
+      throw new ConflictException({
+        message: 'Failed to update avatar URL in profile',
+        error: updateError,
+      });
+    }
+
+    return data;
+  }
+
+  /**
    * @notes Permanently deletes a user account from Supabase Auth.
    * @notes All related data (profiles, favorites, history) is removed
    * automatically via ON DELETE CASCADE constraints in the DB.
