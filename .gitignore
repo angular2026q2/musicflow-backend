@@ -1,6 +1,9 @@
 # JetBrains
 .idea/
 
+# OS Generated files
+.DS_Store
+
 # Logs
 logs
 *.log
