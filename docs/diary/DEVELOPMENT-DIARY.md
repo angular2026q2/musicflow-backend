@@ -7,7 +7,7 @@
 
 ---
 
-## Note #1
+## Entry #1
 **createdAt:** 09 May 2026, 12:00
 
 ### Idea
@@ -42,7 +42,7 @@ None
 
 ---
 
-## Note #2
+## Entry #2
 
 **createdAt:** 09 May 2026, 14:20
 
@@ -96,7 +96,7 @@ JAMENDO_BASE_URL=https://api.jamendo.com/v3.0
 
 ---
 
-## Note #3
+## Entry #3
 
 **createdAt:** 09 May 2026, 14:50
 
@@ -142,7 +142,7 @@ nest g guard/interceptor/filter/decorator
 
 ---
 
-## Note #4
+## Entry #4
 
 **createdAt:** 09 May 2026
 
@@ -165,7 +165,7 @@ Configuring the application entry point and global settings.
 
 ---
 
-## Note #5
+## Entry #5
 
 **createdAt:** 09 May 2026
 
@@ -204,7 +204,7 @@ Thus, I have received complete TypeScript types (`Row`, `Insert`, `Update`) for 
 
 ---
 
-## Note #6
+## Entry #6
 
 **createdAt:** 09 May 2026
 
@@ -234,3 +234,39 @@ Implement `Auth` module: `sign-up` (registration), `sign-in` (entry), `getMe` (g
 ### Result
 I started application and tested it works via `Swagger UI`: for instance, `POST /api/v1/auth/sign-up` returned an _accessToken_ and _user data_. The user appeared in Supabase 
 `Dashboard` -> `Authentication` -> `Users` and in the profiles table.
+
+---
+
+## Entry #7 
+**createdAt:** 10 May 2026
+
+### Idea
+Users module is the next logical step after Auth. A user needs to be able to view their profile, update it, and upload an avatar. Also decided to finish the module completely 
+before moving on, including avatar upload via Supabase Storage (S3 Bucket).
+
+### Implementation
+
+**Profile endpoints** (`src/users/`):
+- Created `UpdateProfileDto` with optional `username` and `full_name` fields
+- Implemented `UsersService` with three methods: `getProfile`, `updateProfile`, `deleteAccount`
+- Added `UsersController` with `GET /profile`, `PATCH /profile`, `DELETE /account`, all protected by `JwtAuthGuard`
+- Added `UsersModule` with `UsersService` exported for potential use in other modules
+
+**Supabase Storage policies** (via SQL Editor):
+- Created four RLS policies on `storage.objects` for the `avatars` bucket: public SELECT, and user-scoped INSERT, UPDATE, DELETE based on `storage.foldername(name)[1]` matching `auth.uid()`
+
+**Avatar upload** (`POST /users/profile/avatar`):
+- Added `uploadAvatar` method in `UsersService` uploads avatar file to Supabase Storage at path `{userId}/avatar.{ext}`, then updates `avatar_url` in the `profiles` table
+- Used `FileInterceptor` from `@nestjs/platform-express` and `ParseFilePipe` with `MaxFileSizeValidator` (2MB) and `FileTypeValidator` (jpeg/jpg/png only)
+- Normalized to lowercase file extension to avoid casing inconsistencies
+
+### Issues & Solutions
+
+**Issue:** `@types/multer` types for `Express.Multer.File` were not available.
+**Solution:** Installed `@nestjs/platform-express` and `@types/multer` as dev dependency.
+
+**Issue:** File extension stored in uppercase (e.g. `.JPG`) depending on original filename.
+**Solution:** Applied `.toLowerCase()` to the extracted extension before constructing the storage path.
+
+**Issue:** Supabase Storage UI no longer supports creating custom policies via the Dashboard form (as of May 2026).
+**Solution:** Created all four Storage RLS policies directly via SQL Editor, same approach used for table policies.
