@@ -238,7 +238,7 @@ I started application and tested it works via `Swagger UI`: for instance, `POST 
 ---
 
 ## Entry #7 
-**createdAt:** 10 May 2026
+**createdAt:** 10 May 2026, 23:00
 
 ### Idea
 Users module is the next logical step after Auth. A user needs to be able to view their profile, update it, and upload an avatar. Also decided to finish the module completely 
@@ -270,3 +270,34 @@ before moving on, including avatar upload via Supabase Storage (S3 Bucket).
 
 **Issue:** Supabase Storage UI no longer supports creating custom policies via the Dashboard form (as of May 2026).
 **Solution:** Created all four Storage RLS policies directly via SQL Editor, same approach used for table policies.
+
+---
+
+## Entry 8
+**createdAt:** 11 May 2026, 12:10
+
+### Thought
+The Users module needed a complete avatar management system — not just upload, but a proper lifecycle: default avatars on registration, user upload with overwrite, and deletion with fallback to a default. Decided to finish this properly before moving on to the Music module.
+
+### Implementation
+
+**Default avatars:**
+- Created a separate `default_avatars` bucket in Supabase Storage (Public, SVG only, 1MB limit)
+- Added a public read RLS policy for the bucket via SQL Editor
+- `getRandomDefaultAvatarUrl()` fetches the file list dynamically from the bucket — no hardcoded count
+- Generated and uploaded 10 music-themed SVG icons for `default_avatars`
+
+**Avatar lifecycle:**
+- `POST /profile/avatar` uploads user's image as `avatar.jpg` (fixed filename + `upsert: true` ensures the same file is always overwritten, no duplicates)
+- `DELETE /profile/avatar` removes custom avatar from Storage and assigns a new random from `default-avatars/`
+- `signUp` in `AuthService` updated to assign a random default avatar at registration instead of `null`
+
+**Files changed:** `users.service.ts`, `users.controller.ts`, `auth.service.ts`, `auth.module.ts`
+
+### Problems & Solutions
+
+**Problem:** Avatar uploaded as `.JPG` (uppercase) created a duplicate file instead of overwriting the previous one.
+**Solution:** Fixed filename to always be `avatar.jpg` regardless of original file extension.
+
+**Problem:** Hardcoded `DEFAULT_AVATARS_COUNT = 10` would break if more avatars were added later.
+**Solution:** Replaced with a dynamic `.list()` call to the `default_avatars` bucket which always reflects the actual number of files in the folder.
