@@ -1,5 +1,4 @@
-/* run
-> supabase gen types typescript --project-id uwazcuzqtmozmhwiedap --schema public > src/types/database.types.ts */
+/* eslint-disable */
 export type Json =
   | string
   | number
@@ -18,24 +17,39 @@ export type Database = {
     Tables: {
       favorites: {
         Row: {
-          added_at: string | null;
+          album_image: string;
+          album_name: string;
+          artist_name: string;
+          audio: string;
+          created_at: string | null;
+          duration: number;
           id: string;
-          track_data: Json;
           track_id: string;
+          track_name: string;
           user_id: string;
         };
         Insert: {
-          added_at?: string | null;
+          album_image: string;
+          album_name: string;
+          artist_name: string;
+          audio: string;
+          created_at?: string | null;
+          duration: number;
           id?: string;
-          track_data: Json;
           track_id: string;
+          track_name: string;
           user_id: string;
         };
         Update: {
-          added_at?: string | null;
+          album_image?: string;
+          album_name?: string;
+          artist_name?: string;
+          audio?: string;
+          created_at?: string | null;
+          duration?: number;
           id?: string;
-          track_data?: Json;
           track_id?: string;
+          track_name?: string;
           user_id?: string;
         };
         Relationships: [];
@@ -195,8 +209,8 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-      keyof DefaultSchema['Enums'] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema['Enums']
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -212,9 +226,8 @@ export type Enums<
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-      | keyof DefaultSchema['CompositeTypes']
-      | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema['CompositeTypes']
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
