@@ -56,24 +56,39 @@ export type Database = {
       };
       listening_history: {
         Row: {
+          album_image: string;
+          album_name: string;
+          artist_name: string;
+          audio: string;
+          duration: number;
           id: string;
           played_at: string | null;
-          track_data: Json;
           track_id: string;
+          track_name: string;
           user_id: string;
         };
         Insert: {
+          album_image: string;
+          album_name: string;
+          artist_name: string;
+          audio: string;
+          duration: number;
           id?: string;
           played_at?: string | null;
-          track_data: Json;
           track_id: string;
+          track_name: string;
           user_id: string;
         };
         Update: {
+          album_image?: string;
+          album_name?: string;
+          artist_name?: string;
+          audio?: string;
+          duration?: number;
           id?: string;
           played_at?: string | null;
-          track_data?: Json;
           track_id?: string;
+          track_name?: string;
           user_id?: string;
         };
         Relationships: [];

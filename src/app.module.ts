@@ -5,6 +5,7 @@ import { AuthModule } from '@auth/auth.module';
 import { UsersModule } from '@users/users.module';
 import { MusicModule } from '@music/music.module';
 import { FavoritesModule } from '@favorites/favorites.module';
+import { HistoryModule } from './history/history.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FavoritesModule } from '@favorites/favorites.module';
     UsersModule,
     MusicModule,
     FavoritesModule,
+    HistoryModule,
   ],
   controllers: [],
   providers: [],
