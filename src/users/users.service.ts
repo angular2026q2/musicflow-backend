@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '@supabase/supabase.service';
 import { UpdateProfileDto } from '@users/dto/update-profile.dto';
 
@@ -11,7 +12,52 @@ export type UserProfile = Tables<'profiles'>;
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  /**
+   * @note Deletes the user's custom avatar from Supabase Storage
+   * and assigns a new random default avatar to their profile.
+   * @param userId - The UUID of the user
+   * @returns The updated profile record with the new default avatar_url
+   * @throws ConflictException if the deletion or profile update fails
+   */
+  async deleteAvatar(userId: string): Promise<UserProfile> {
+    const filePath = `${userId}/avatar.jpg`;
+
+    const { error: deleteError } = await this.supabaseService.db.storage
+      .from('avatars')
+      .remove([filePath]);
+
+    if (deleteError) {
+      throw new ConflictException({
+        error: deleteError.message,
+        message: `An error occurred while deleting avatar`,
+      });
+    }
+
+    const defaultAvatarUrl = await this.getRandomDefaultAvatarUrl();
+
+    const { data, error: updateError } = await this.supabaseService.db
+      .from('profiles')
+      .update({
+        avatar_url: defaultAvatarUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (updateError ?? !data) {
+      throw new ConflictException(
+        'Failed to update profile after avatar deletion',
+      );
+    }
+
+    return data;
+  }
 
   /**
    * @notes Retrieves a user profile by ID.
@@ -141,5 +187,37 @@ export class UsersService {
     if (error) {
       throw new NotFoundException('Failed to delete account');
     }
+  }
+
+  /**
+   * @notes Returns a random default avatar URL.
+   * @notes Used externally by AuthService during user registration.
+   */
+  async getDefaultAvatarUrl(): Promise<string> {
+    return this.getRandomDefaultAvatarUrl();
+  }
+
+  /**
+   * @notes Fetches the list of default avatars from the `default_avatars` bucket
+   * and returns a random one's public URL.
+   * @notes Automatically adapts to however many files are stored in the bucket.
+   * @throws ConflictException if the bucket is empty or unavailable
+   */
+  private async getRandomDefaultAvatarUrl(): Promise<string> {
+    const { data, error } = await this.supabaseService.db.storage
+      .from('default_avatars')
+      .list();
+
+    if (error ?? !data) {
+      throw new ConflictException('Default avatars not available');
+    }
+
+    const random = data[Math.floor(Math.random() * data.length)];
+
+    const { data: urlData } = this.supabaseService.db.storage
+      .from('default_avatars')
+      .getPublicUrl(random.name);
+
+    return urlData.publicUrl;
   }
 }

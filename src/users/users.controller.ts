@@ -95,6 +95,21 @@ export class UsersController {
     return this.usersService.uploadAvatar(user.id, file);
   }
 
+  /**
+   * @note Deletes the current user's custom avatar and assigns a random default one.
+   */
+  @Delete('profile/avatar')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete user avatar and revert to default' })
+  @ApiResponse({
+    status: 200,
+    description: 'Avatar deleted successfully. Default assigned',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async deleteAvatar(@CurrentUser() user: AuthUser): Promise<UserProfile> {
+    return this.usersService.deleteAvatar(user.id);
+  }
+
   /** @note Permanently deletes current user account and all related data */
   @Delete('account')
   @HttpCode(HttpStatus.NO_CONTENT)

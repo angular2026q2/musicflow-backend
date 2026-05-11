@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { SupabaseService } from '@supabase/supabase.service';
+import { UsersService } from '@users/users.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import type { AuthUser, JwtPayload } from './strategies/jwt.strategy';
@@ -22,10 +23,10 @@ export class AuthService {
     private readonly supabaseService: SupabaseService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly usersService: UsersService,
   ) {}
 
   async signUp(dto: SignUpDto): Promise<AuthResponse> {
-    // * username available checks:
     const { data: existingProfile } = await this.supabaseService.db
       .from('profiles')
       .select('id')
@@ -49,13 +50,15 @@ export class AuthService {
       );
     }
 
+    const defaultAvatarUrl = await this.usersService.getDefaultAvatarUrl();
+
     const { data: profile, error: profileError } = await this.supabaseService.db
       .from('profiles')
       .insert({
         id: authData.user.id,
         username: dto.username,
         full_name: null,
-        avatar_url: null,
+        avatar_url: defaultAvatarUrl,
       })
       .select()
       .single();
