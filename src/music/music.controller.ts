@@ -19,6 +19,7 @@ import { MusicService } from '@music/music.service';
 import { MusicQueryDto } from '@music/dto/music-query.dto';
 import type {
   JamendoAlbum,
+  JamendoAlbumTrack,
   JamendoArtist,
   JamendoTrack,
   PaginatedResult,
@@ -81,6 +82,19 @@ export class MusicController {
   @ApiResponse({ status: 404, description: 'Album not found' })
   async getAlbumById(@Param('id') id: string): Promise<JamendoAlbum> {
     return this.musicService.getAlbumById(id);
+  }
+
+  /**
+   * @note Returns tracks for a specific album by Jamendo album ID.
+   */
+  @Get('albums/:id/tracks')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get album tracks by album ID' })
+  @ApiParam({ name: 'id', example: '139585' })
+  @ApiResponse({ status: 200, description: 'Album tracks returned' })
+  @ApiResponse({ status: 404, description: 'Album not found' })
+  async getAlbumTracks(@Param('id') id: string): Promise<JamendoAlbumTrack[]> {
+    return this.musicService.getAlbumTracks(id);
   }
 
   /**

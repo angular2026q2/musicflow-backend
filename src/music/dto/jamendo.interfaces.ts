@@ -83,6 +83,28 @@ export interface JamendoAlbum {
 }
 
 /**
+ * @note Represents a single track within an album response from Jamendo API.
+ */
+export interface JamendoAlbumTrack {
+  id: string;
+  position: string;
+  name: string;
+  duration: string;
+  license_ccurl: string;
+  audio: string;
+  audiodownload: string;
+  audiodownload_allowed: boolean;
+}
+
+/**
+ * @note Represents an album with its tracks from Jamendo /albums/tracks endpoint.
+ */
+export interface JamendoAlbumWithTracks extends JamendoAlbum {
+  track_id: string;
+  tracks: JamendoAlbumTrack[];
+}
+
+/**
  * @note Represents a single artist returned by Jamendo API
  * @example
  * ```json

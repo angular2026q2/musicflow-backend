@@ -12,6 +12,8 @@ import type {
   JamendoArtist,
   JamendoResponse,
   PaginatedResult,
+  JamendoAlbumTrack,
+  JamendoAlbumWithTracks,
 } from './dto/jamendo.interfaces';
 import type { MusicQueryDto } from './dto/music-query.dto';
 
@@ -128,6 +130,31 @@ export class MusicService {
     }
 
     return album;
+  }
+
+  /**
+   * @note Fetches tracks for a specific album from Jamendo API.
+   * @param albumId - Jamendo album ID
+   * @returns Array of AlbumTrack objects
+   * @throws NotFoundException if album does not exist
+   */
+  async getAlbumTracks(albumId: string): Promise<JamendoAlbumTrack[]> {
+    const url = this.buildUrl('/albums/tracks', { id: albumId });
+
+    const response = await firstValueFrom(
+      this.httpService.get<JamendoResponse<JamendoAlbumWithTracks>>(url),
+    ).catch(() => {
+      throw new InternalServerErrorException(
+        'Failed to fetch album tracks from Jamendo',
+      );
+    });
+
+    const album = response.data.results[0];
+    if (!album) {
+      throw new NotFoundException(`Album with id ${albumId} not found`);
+    }
+
+    return album.tracks;
   }
 
   /**
