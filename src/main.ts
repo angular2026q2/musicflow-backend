@@ -8,7 +8,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
-  const PORT = configService.get<number>('PORT', 3000);
+  // const PORT = configService.get<number>('PORT', 3000);
+  const PORT = parseInt(configService.get<string>('PORT', '3000'), 10);
 
   app.setGlobalPrefix('api/v1');
 
@@ -38,7 +39,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(PORT, () => {
+  await app.listen(PORT, '0.0.0.0', () => {
     console.log(
       `Application is running on: \x1b[34m%s\x1b[0m`,
       `http://localhost:${PORT}/api/v1`,
