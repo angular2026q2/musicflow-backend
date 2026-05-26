@@ -1,3 +1,4 @@
+import { ResetPasswordDto } from '@auth/dto/reset-password.dto';
 import {
   Body,
   Controller,
@@ -41,6 +42,18 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async signIn(@Body() dto: SignInDto): Promise<AuthResponse> {
     return this.authService.signIn(dto);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset user password via email' })
+  @ApiResponse({ status: 200, description: 'Password reset email sent' })
+  @ApiResponse({
+    status: 404,
+    description: 'User with provided email not found',
+  })
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
+    return this.authService.resetPassword(dto.email);
   }
 
   @Get('me')

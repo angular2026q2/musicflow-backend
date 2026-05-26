@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -114,6 +115,30 @@ export class AuthService {
     return data;
   }
 
+  /** @description Sends a password reset email to the user via  Supabase Auth service.
+   *
+   * Does not reveal whether the email exists in the system (security best practice).
+   * @param email - user email address to recover password
+   */
+  async resetPassword(email: string): Promise<void> {
+    // check in auth.users via Supabase admin
+    const { data, error } =
+      await this.supabaseService.db.auth.admin.listUsers();
+
+    if (error) {
+      throw new NotFoundException('No account found with this email');
+    }
+
+    const userExists = data.users.some(
+      (u: { email?: string }) => u.email === email,
+    );
+
+    if (!userExists) {
+      throw new NotFoundException('No account found with this email');
+    }
+
+    await this.supabaseService.db.auth.resetPasswordForEmail(email);
+  }
   private generateToken(userId: string, email: string): string {
     const payload: JwtPayload = { sub: userId, email };
     const expiresIn = this.configService.getOrThrow<string>(
