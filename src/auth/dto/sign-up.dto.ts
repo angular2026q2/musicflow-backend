@@ -1,5 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class SignUpDto {
   @ApiProperty({ example: 'user@example.io' })
@@ -17,4 +23,10 @@ export class SignUpDto {
   @MinLength(3)
   @MaxLength(32)
   username: string;
+
+  @ApiPropertyOptional({ example: 'John Smith' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  full_name?: string | null;
 }
