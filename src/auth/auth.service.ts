@@ -58,7 +58,7 @@ export class AuthService {
       .insert({
         id: authData.user.id,
         username: dto.username,
-        full_name: null,
+        full_name: dto.full_name ?? null,
         avatar_url: defaultAvatarUrl,
       })
       .select()
