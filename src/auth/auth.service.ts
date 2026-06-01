@@ -76,9 +76,41 @@ export class AuthService {
   }
 
   async signIn(dto: SignInDto): Promise<AuthResponse> {
+    // * `identifier` checks: whether it's an email or username:
+    const isEmail = dto.identifier.includes('@');
+
+    let email: string;
+
+    if (isEmail) {
+      email = dto.identifier;
+    } else {
+      // * find user by their `username` in profiles Table:
+      const { data: profile, error: profileLookupError } =
+        await this.supabaseService.db
+          .from('profiles')
+          .select('id')
+          .eq('username', dto.identifier)
+          .single();
+
+      if (profileLookupError ?? !profile) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      // * Get email from `auth.users` via Supabase Admin API:
+      const { data: adminUser, error: adminError } =
+        await this.supabaseService.db.auth.admin.getUserById(profile.id);
+
+      if (adminError ?? !adminUser.user?.email) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      email = adminUser.user.email;
+    }
+
+    // * Authentication via Supabase with found email
     const { data, error } =
       await this.supabaseService.db.auth.signInWithPassword({
-        email: dto.email,
+        email,
         password: dto.password,
       });
 
@@ -96,7 +128,7 @@ export class AuthService {
       throw new UnauthorizedException('User profile not found');
     }
 
-    const accessToken = this.generateToken(data.user.id, dto.email);
+    const accessToken = this.generateToken(data.user.id, email);
 
     return { accessToken, user: profile };
   }
