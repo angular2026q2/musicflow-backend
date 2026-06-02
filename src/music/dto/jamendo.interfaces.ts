@@ -195,6 +195,8 @@ export interface PaginatedResult<T> {
   data: T[];
   meta: {
     results_count: number;
-    next: string | null;
+    has_more: boolean;
+    /** @deprecated Always null. Use `has_more` instead. Will be removed after frontend migrates. */
+    next: null;
   };
 }

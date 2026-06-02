@@ -58,7 +58,7 @@ export class MusicService {
       );
     });
 
-    return this.paginate(response.data, response.data.results);
+    return this.paginate(response.data, response.data.results, query);
   }
 
   /**
@@ -108,7 +108,7 @@ export class MusicService {
       );
     });
 
-    return this.paginate(response.data, response.data.results);
+    return this.paginate(response.data, response.data.results, query);
   }
 
   /**
@@ -183,7 +183,7 @@ export class MusicService {
       );
     });
 
-    return this.paginate(response.data, response.data.results);
+    return this.paginate(response.data, response.data.results, query);
   }
 
   /**
@@ -247,6 +247,7 @@ export class MusicService {
       data,
       meta: {
         results_count: artist.tracks.length,
+        has_more: offset + data.length < artist.tracks.length,
         next: null,
       },
     };
@@ -288,6 +289,7 @@ export class MusicService {
       data,
       meta: {
         results_count: artist.albums.length,
+        has_more: offset + data.length < artist.albums.length,
         next: null,
       },
     };
@@ -311,11 +313,11 @@ export class MusicService {
       this.httpService.get<JamendoResponse<JamendoTrack>>(url),
     ).catch(() => {
       throw new InternalServerErrorException(
-        'Failed to fetch fetured tracks from Jamendo',
+        'Failed to fetch featured tracks from Jamendo',
       );
     });
 
-    return this.paginate(response.data, response.data.results);
+    return this.paginate(response.data, response.data.results, query);
   }
 
   /**
@@ -362,16 +364,23 @@ export class MusicService {
    * @description Wraps Jamendo response into a PaginatedResult.
    * @param response - Raw Jamendo API response
    * @param data - Parsed results array
+   * @param query - Query parameters (limit, offset)
+   * @returns PaginatedResult object containing data and meta-info
    */
   private paginate<T>(
     response: JamendoResponse<T>,
     data: T[],
+    query: MusicQueryDto,
   ): PaginatedResult<T> {
+    const offset = query.offset ?? 0;
+    const results_count = response.headers.results_count;
+
     return {
       data,
       meta: {
-        results_count: response.headers.results_count,
-        next: response.headers.next ?? null,
+        results_count,
+        has_more: offset + data.length < results_count,
+        next: null,
       },
     };
   }
