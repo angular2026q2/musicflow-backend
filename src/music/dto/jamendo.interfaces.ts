@@ -1,5 +1,5 @@
 /**
- * @note Represents a single track returned by Jamendo API
+ * @description Represents a single track returned by Jamendo API
  * @example
  * ```json
  * {
@@ -52,7 +52,7 @@ export interface JamendoTrack {
 }
 
 /**
- * @note Represents a single album returned by Jamendo API
+ * @description Represents a single album returned by Jamendo API
  * @example
  * ```json
  * {
@@ -83,7 +83,7 @@ export interface JamendoAlbum {
 }
 
 /**
- * @note Represents a single track within an album response from Jamendo API.
+ * @description Represents a single track within an album response from Jamendo API.
  */
 export interface JamendoAlbumTrack {
   id: string;
@@ -97,7 +97,7 @@ export interface JamendoAlbumTrack {
 }
 
 /**
- * @note Represents an album with its tracks from Jamendo /albums/tracks endpoint.
+ * @description Represents an album with its tracks from Jamendo /albums/tracks endpoint.
  */
 export interface JamendoAlbumWithTracks extends JamendoAlbum {
   track_id: string;
@@ -105,7 +105,7 @@ export interface JamendoAlbumWithTracks extends JamendoAlbum {
 }
 
 /**
- * @note Represents a single artist returned by Jamendo API
+ * @description Represents a single artist returned by Jamendo API
  * @example
  * ```json
  * {
@@ -129,8 +129,42 @@ export interface JamendoArtist {
   shareurl: string;
 }
 
+/** @description Represents a single track within an artist response from Jamendo `/artists/tracks` endpoint. */
+export interface JamendoArtistTrack {
+  id: string;
+  name: string;
+  album_name: string;
+  album_id: string;
+  image: string;
+  audio: string;
+  audiodownload: string;
+  audiodownload_allowed: boolean;
+  duration?: number;
+  position?: number;
+  releasedate?: string;
+  license_ccurl?: string;
+}
+
+/** @description Represents an artist with its tracks from Jamendo `/artists/tracks` endpoint. */
+export interface JamendoArtistWithTracks extends JamendoArtist {
+  tracks: JamendoArtistTrack[];
+}
+
+/** @description Represents a single album within an artist response from Jamendo `/artists/albums` endpoint. */
+export interface JamendoArtistAlbum {
+  id: string;
+  name: string;
+  releasedate: string;
+  image: string;
+}
+
+/** @description Represents an artist with its albums from Jamendo `/artists/albums` endpoint. */
+export interface JamendoArtistWithAlbums extends JamendoArtist {
+  albums: JamendoArtistAlbum[];
+}
+
 /**
- * @note Generic wrapper for all Jamendo API list responses
+ * @description Generic wrapper for all Jamendo API list responses
  * @example
  * ```json
  * {
@@ -161,6 +195,8 @@ export interface PaginatedResult<T> {
   data: T[];
   meta: {
     results_count: number;
-    next: string | null;
+    has_more: boolean;
+    /** @deprecated Always null. Use `has_more` instead. Will be removed after frontend migrates. */
+    next: null;
   };
 }

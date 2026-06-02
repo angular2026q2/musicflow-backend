@@ -14,6 +14,10 @@ import type {
   PaginatedResult,
   JamendoAlbumTrack,
   JamendoAlbumWithTracks,
+  JamendoArtistTrack,
+  JamendoArtistAlbum,
+  JamendoArtistWithTracks,
+  JamendoArtistWithAlbums,
 } from './dto/jamendo.interfaces';
 import type { MusicQueryDto } from './dto/music-query.dto';
 
@@ -31,8 +35,8 @@ export class MusicService {
   }
 
   /**
-   * @notes Fetches a list of tracks from Jamendo API.
-   * @notes Supports search by name, genre tags, pagination.
+   * @description Fetches a list of tracks from Jamendo API.
+   * @description Supports search by name, genre tags, pagination.
    * @param query - Query parameters (search, tags, limit, offset)
    * @returns Array of JamendoTrack objects
    */
@@ -54,11 +58,11 @@ export class MusicService {
       );
     });
 
-    return this.paginate(response.data, response.data.results);
+    return this.paginate(response.data, response.data.results, query);
   }
 
   /**
-   * @note Fetches a single track by its Jamendo ID.
+   * @description Fetches a single track by its Jamendo ID.
    * @param id - Jamendo track ID
    * @returns A single JamendoTrack object
    * @throws NotFoundException if track does not exist
@@ -83,7 +87,7 @@ export class MusicService {
   }
 
   /**
-   * @note Fetches a list of albums from Jamendo API.
+   * @description Fetches a list of albums from Jamendo API.
    * @param query - Query parameters (search, limit, offset)
    * @returns Array of JamendoAlbum objects
    */
@@ -104,11 +108,11 @@ export class MusicService {
       );
     });
 
-    return this.paginate(response.data, response.data.results);
+    return this.paginate(response.data, response.data.results, query);
   }
 
   /**
-   * @note Fetches a single album by its Jamendo ID.
+   * @description Fetches a single album by its Jamendo ID.
    * @param id - Jamendo album ID
    * @returns A single JamendoAlbum object
    * @throws NotFoundException if album does not exist
@@ -133,7 +137,7 @@ export class MusicService {
   }
 
   /**
-   * @note Fetches tracks for a specific album from Jamendo API.
+   * @description Fetches tracks for a specific album from Jamendo API.
    * @param albumId - Jamendo album ID
    * @returns Array of AlbumTrack objects
    * @throws NotFoundException if album does not exist
@@ -158,7 +162,7 @@ export class MusicService {
   }
 
   /**
-   * @note Fetches a list of artists from Jamendo API
+   * @description Fetches a list of artists from Jamendo API
    * @param query - Query params (search, limit, offset
    * @returns Array of JamendoArtists objects
    */
@@ -179,11 +183,11 @@ export class MusicService {
       );
     });
 
-    return this.paginate(response.data, response.data.results);
+    return this.paginate(response.data, response.data.results, query);
   }
 
   /**
-   * @note Fetches a single artist by their Jamendo ID
+   * @description Fetches a single artist by their Jamendo ID
    * @param id - Jamendo artist ID
    * @returns A single JamendoArtist object
    * @throws NotFoundException if artist does not exist
@@ -207,8 +211,92 @@ export class MusicService {
     return artist;
   }
 
+  /** @description Fetches tracks for a specific artist from Jamendo API.
+   * @param artistId - Jamendo artist ID
+   * @param query - Query params (limit, offset)
+   * @returns Paginated list of JamendoArtistTrack objects
+   * @throws NotFoundException if artist does not exist
+   */
+  async getArtistTracks(
+    artistId: string,
+    query: MusicQueryDto,
+  ): Promise<PaginatedResult<JamendoArtistTrack>> {
+    const url = this.buildUrl('/artists/tracks', {
+      id: artistId,
+      limit: 1,
+    });
+
+    const response = await firstValueFrom(
+      this.httpService.get<JamendoResponse<JamendoArtistWithTracks>>(url),
+    ).catch(() => {
+      throw new InternalServerErrorException(
+        'Failed to fetch artist tracks from Jamendo',
+      );
+    });
+
+    const artist = response.data.results[0];
+    if (!artist) {
+      throw new NotFoundException(`Artist with ID ${artistId} not found`);
+    }
+
+    const limit = query.limit ?? 20;
+    const offset = query.offset ?? 0;
+    const data = artist.tracks.slice(offset, offset + limit);
+
+    return {
+      data,
+      meta: {
+        results_count: artist.tracks.length,
+        has_more: offset + data.length < artist.tracks.length,
+        next: null,
+      },
+    };
+  }
+
+  /** @description Fetches albums for a specific artist from Jamendo API.
+   * @param artistId - Jamendo artist ID
+   * @param query - Query params (limit, offset)
+   * @returns Paginated list of JamendoArtistAlbum objects
+   * @throws NotFoundException if artist does not exist
+   */
+  async getArtistAlbums(
+    artistId: string,
+    query: MusicQueryDto,
+  ): Promise<PaginatedResult<JamendoArtistAlbum>> {
+    const url = this.buildUrl(`/artists/albums`, {
+      id: artistId,
+      limit: 1,
+    });
+
+    const response = await firstValueFrom(
+      this.httpService.get<JamendoResponse<JamendoArtistWithAlbums>>(url),
+    ).catch(() => {
+      throw new InternalServerErrorException(
+        'Failed to fetch artist albums from Jamendo',
+      );
+    });
+
+    const artist = response.data.results[0];
+    if (!artist) {
+      throw new NotFoundException(`Artist with ID ${artistId} not found`);
+    }
+
+    const limit = query.limit ?? 20;
+    const offset = query.offset ?? 0;
+    const data = artist.albums.slice(offset, offset + limit);
+
+    return {
+      data,
+      meta: {
+        results_count: artist.albums.length,
+        has_more: offset + data.length < artist.albums.length,
+        next: null,
+      },
+    };
+  }
+
   /**
-   * @note Fetches featured tracks from Jamendo API.
+   * @description Fetches featured tracks from Jamendo API.
    * @param query - Query parameters (limit, offset)
    * @returns Array of featured JamendoTrack objects
    */
@@ -225,15 +313,15 @@ export class MusicService {
       this.httpService.get<JamendoResponse<JamendoTrack>>(url),
     ).catch(() => {
       throw new InternalServerErrorException(
-        'Failed to fetch fetured tracks from Jamendo',
+        'Failed to fetch featured tracks from Jamendo',
       );
     });
 
-    return this.paginate(response.data, response.data.results);
+    return this.paginate(response.data, response.data.results, query);
   }
 
   /**
-   * @note Fetches available music genres (tags) from Jamendo API.
+   * @description Fetches available music genres (tags) from Jamendo API.
    * @returns Array of genre name strings
    */
   async getGenres(): Promise<string[]> {
@@ -251,7 +339,7 @@ export class MusicService {
   }
 
   /**
-   * @note Builds a URL with common Jamendo query params (client_id, format, limit, offset).
+   * @description Builds a URL with common Jamendo query params (client_id, format, limit, offset).
    * @param endpoint - Jamendo API endpoint path (e.g. '/tracks'
    * @param params - Additional query params
    */
@@ -273,19 +361,26 @@ export class MusicService {
   }
 
   /**
-   * @note Wraps Jamendo response into a PaginatedResult.
+   * @description Wraps Jamendo response into a PaginatedResult.
    * @param response - Raw Jamendo API response
    * @param data - Parsed results array
+   * @param query - Query parameters (limit, offset)
+   * @returns PaginatedResult object containing data and meta-info
    */
   private paginate<T>(
     response: JamendoResponse<T>,
     data: T[],
+    query: MusicQueryDto,
   ): PaginatedResult<T> {
+    const offset = query.offset ?? 0;
+    const results_count = response.headers.results_count;
+
     return {
       data,
       meta: {
-        results_count: response.headers.results_count,
-        next: response.headers.next ?? null,
+        results_count,
+        has_more: offset + data.length < results_count,
+        next: null,
       },
     };
   }
