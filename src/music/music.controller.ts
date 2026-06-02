@@ -21,6 +21,8 @@ import type {
   JamendoAlbum,
   JamendoAlbumTrack,
   JamendoArtist,
+  JamendoArtistAlbum,
+  JamendoArtistTrack,
   JamendoTrack,
   PaginatedResult,
 } from '@music/dto/jamendo.interfaces';
@@ -121,6 +123,38 @@ export class MusicController {
   @ApiResponse({ status: 404, description: 'Artist not found' })
   async getArtistById(@Param('id') id: string): Promise<JamendoArtist> {
     return this.musicService.getArtistById(id);
+  }
+
+  /**
+   * @note Returns tracks for a specific artist by Jamendo artist ID.
+   */
+  @Get('artists/:id/tracks')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get artist tracks by artist ID' })
+  @ApiParam({ name: 'id', example: '357890' })
+  @ApiResponse({ status: 200, description: 'Artist tracks returned' })
+  @ApiResponse({ status: 404, description: 'Artist not found' })
+  async getArtistTracks(
+    @Param('id') id: string,
+    @Query() query: MusicQueryDto,
+  ): Promise<PaginatedResult<JamendoArtistTrack>> {
+    return this.musicService.getArtistTracks(id, query);
+  }
+
+  /**
+   * @note Returns albums for a specific artist by Jamendo artist ID.
+   */
+  @Get('artists/:id/albums')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get artist albums by artist ID' })
+  @ApiParam({ name: 'id', example: '357890' })
+  @ApiResponse({ status: 200, description: 'Artist albums returned' })
+  @ApiResponse({ status: 404, description: 'Artist not found' })
+  async getArtistAlbums(
+    @Param('id') id: string,
+    @Query() query: MusicQueryDto,
+  ): Promise<PaginatedResult<JamendoArtistAlbum>> {
+    return this.musicService.getArtistAlbums(id, query);
   }
 
   /**
