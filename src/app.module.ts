@@ -1,5 +1,8 @@
+import { KeepAliveTask } from '@common/tasks/keep-alive.task';
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { SupabaseModule } from '@supabase/supabase.module';
 import { AuthModule } from '@auth/auth.module';
 import { UsersModule } from '@users/users.module';
@@ -9,6 +12,8 @@ import { HistoryModule } from './history/history.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
+    HttpModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -21,6 +26,6 @@ import { HistoryModule } from './history/history.module';
     HistoryModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [KeepAliveTask],
 })
 export class AppModule {}
