@@ -169,7 +169,9 @@ export class AuthService {
       throw new NotFoundException('No account found with this email');
     }
 
-    await this.supabaseService.db.auth.resetPasswordForEmail(email);
+    await this.supabaseService.db.auth.resetPasswordForEmail(email, {
+      redirectTo: `${this.configService.getOrThrow<string>('FRONTEND_URL')}/reset-password`,
+    });
   }
 
   /**
