@@ -147,9 +147,9 @@ export class AuthService {
     return data;
   }
 
-  /** @description Sends a password reset email to the user via  Supabase Auth service.
-   *
-   * Does not reveal whether the email exists in the system (security best practice).
+  /** @description
+   * - Sends a password reset email to the user via Supabase Auth service.
+   * - Does not reveal whether the email exists in the system (security best practice).
    * @param email - user email address to recover password
    */
   async resetPassword(email: string): Promise<void> {
@@ -171,6 +171,41 @@ export class AuthService {
 
     await this.supabaseService.db.auth.resetPasswordForEmail(email);
   }
+
+  /**
+   * @description Updates user password using recovery token from a Supabase email link.
+   * @param {string} accessToken - recovery token from URL hash
+   * @param {string} newPassword - new password to set
+   * @throws {UnauthorizedException} if the recovery token is invalid or expired
+   */
+  async updatePassword(
+    accessToken: string,
+    newPassword: string,
+  ): Promise<void> {
+    // * Set session from recovery token first
+    const { error: sessionError } =
+      await this.supabaseService.db.auth.setSession({
+        access_token: accessToken,
+        refresh_token: '',
+      });
+
+    if (sessionError) {
+      throw new UnauthorizedException(
+        'Failed to update password. Link may have expired.',
+      );
+    }
+
+    const { error } = await this.supabaseService.db.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      throw new UnauthorizedException(
+        'Failed to update password. Link may have expired.',
+      );
+    }
+  }
+
   private generateToken(userId: string, email: string): string {
     const payload: JwtPayload = { sub: userId, email };
     const expiresIn = this.configService.getOrThrow<string>(
