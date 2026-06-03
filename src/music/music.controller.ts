@@ -1,10 +1,4 @@
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   Controller,
   Get,
@@ -12,9 +6,7 @@ import {
   HttpStatus,
   Param,
   Query,
-  UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { MusicService } from '@music/music.service';
 import { MusicQueryDto } from '@music/dto/music-query.dto';
 import type {
@@ -28,8 +20,6 @@ import type {
 } from '@music/dto/jamendo.interfaces';
 
 @ApiTags('Music')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('music')
 export class MusicController {
   constructor(private readonly musicService: MusicService) {}
