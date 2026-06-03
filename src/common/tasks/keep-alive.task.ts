@@ -15,6 +15,8 @@ export class KeepAliveTask {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async pingRailway(): Promise<void> {
+    if (this.configService.get('KEEP_ALIVE_ENABLED') !== 'true') return;
+
     const baseUrl = this.configService.getOrThrow<string>(
       'APP_URL',
       'https://musicflow-backend-production.up.railway.app',
