@@ -1,4 +1,3 @@
-import { ResetPasswordDto } from '@auth/dto/reset-password.dto';
 import {
   Body,
   Controller,
@@ -15,8 +14,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthResponse, AuthService } from '@auth/auth.service';
+
 import { SignInDto } from '@auth/dto/sign-in.dto';
 import { SignUpDto } from '@auth/dto/sign-up.dto';
+import { ResetPasswordDto } from '@auth/dto/reset-password.dto';
+import { UpdatePasswordDto } from '@auth/dto/update-password.dto';
+
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import type { AuthUser } from '@auth/strategies/jwt.strategy';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
@@ -54,6 +57,15 @@ export class AuthController {
   })
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
     return this.authService.resetPassword(dto.email);
+  }
+
+  @Post('update-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update password using recovery token' })
+  @ApiResponse({ status: 200, description: 'Password updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+  async updatePassword(@Body() dto: UpdatePasswordDto): Promise<void> {
+    return this.authService.updatePassword(dto.access_token, dto.new_password);
   }
 
   @Get('me')
