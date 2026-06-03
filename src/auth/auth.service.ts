@@ -109,7 +109,7 @@ export class AuthService {
 
     // * Authentication via Supabase with found email
     const { data, error } =
-      await this.supabaseService.db.auth.signInWithPassword({
+      await this.supabaseService.userAuth.auth.signInWithPassword({
         email,
         password: dto.password,
       });
@@ -169,7 +169,7 @@ export class AuthService {
       throw new NotFoundException('No account found with this email');
     }
 
-    await this.supabaseService.db.auth.resetPasswordForEmail(email, {
+    await this.supabaseService.userAuth.auth.resetPasswordForEmail(email, {
       redirectTo: `${this.configService.getOrThrow<string>('FRONTEND_URL')}/reset-password`,
     });
   }
@@ -186,7 +186,7 @@ export class AuthService {
   ): Promise<void> {
     // * Set session from recovery token first
     const { error: sessionError } =
-      await this.supabaseService.db.auth.setSession({
+      await this.supabaseService.userAuth.auth.setSession({
         access_token: accessToken,
         refresh_token: '',
       });
@@ -197,7 +197,7 @@ export class AuthService {
       );
     }
 
-    const { error } = await this.supabaseService.db.auth.updateUser({
+    const { error } = await this.supabaseService.userAuth.auth.updateUser({
       password: newPassword,
     });
 
