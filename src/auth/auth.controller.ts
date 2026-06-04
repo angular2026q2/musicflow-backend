@@ -65,7 +65,11 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Password updated successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async updatePassword(@Body() dto: UpdatePasswordDto): Promise<void> {
-    return this.authService.updatePassword(dto.access_token, dto.new_password);
+    return this.authService.updatePassword(
+      dto.access_token,
+      dto.refresh_token,
+      dto.new_password,
+    );
   }
 
   @Get('me')
