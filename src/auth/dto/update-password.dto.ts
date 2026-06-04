@@ -8,6 +8,10 @@ export class UpdatePasswordDto {
   @IsString()
   access_token: string;
 
+  @ApiProperty({ description: 'Refresh token from email link.' })
+  @IsString()
+  refresh_token: string;
+
   @ApiProperty({ example: 'NewStrongPassword123!', minLength: 6 })
   @IsString()
   @MinLength(6)

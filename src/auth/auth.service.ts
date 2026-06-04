@@ -177,18 +177,20 @@ export class AuthService {
   /**
    * @description Updates user password using recovery token from a Supabase email link.
    * @param {string} accessToken - recovery token from URL hash
+   * @param {string} refreshToken - refresh token from email link
    * @param {string} newPassword - new password to set
    * @throws {UnauthorizedException} if the recovery token is invalid or expired
    */
   async updatePassword(
     accessToken: string,
+    refreshToken: string,
     newPassword: string,
   ): Promise<void> {
     // * Set session from recovery token first
     const { error: sessionError } =
       await this.supabaseService.userAuth.auth.setSession({
         access_token: accessToken,
-        refresh_token: '',
+        refresh_token: refreshToken,
       });
 
     if (sessionError) {
