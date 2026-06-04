@@ -325,17 +325,38 @@ export class MusicService {
    * @returns Array of genre name strings
    */
   async getGenres(): Promise<string[]> {
-    const url = this.buildUrl('/tags', { limit: 20 });
+    const FALLBACK_GENRES = [
+      'rock',
+      'electronic',
+      'classical',
+      'ambient',
+      'pop',
+      'jazz',
+      'hiphop',
+      'metal',
+      'folk',
+      'soundtrack',
+      'chillout',
+      'lounge',
+      'acoustic',
+      'instrumental',
+      'world',
+    ];
 
-    const response = await firstValueFrom(
-      this.httpService.get<JamendoResponse<{ id: string; name: string }>>(url),
-    ).catch(() => {
-      throw new InternalServerErrorException(
-        '' + 'Failed to fetch genres from Jamendo',
+    try {
+      const url = this.buildUrl('/tags', { limit: 20 });
+      const response = await firstValueFrom(
+        this.httpService.get<JamendoResponse<{ id: string; name: string }>>(
+          url,
+        ),
       );
-    });
 
-    return response.data.results.map((tag) => tag.name);
+      const genres = response.data.results.map((tag) => tag.name);
+
+      return genres.length > 0 ? genres : FALLBACK_GENRES;
+    } catch {
+      return FALLBACK_GENRES;
+    }
   }
 
   /**
