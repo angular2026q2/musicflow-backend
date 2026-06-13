@@ -120,6 +120,75 @@ export type Database = {
         };
         Relationships: [];
       };
+      playlists: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      playlist_tracks: {
+        Row: {
+          id: string;
+          playlist_id: string;
+          track_id: string;
+          track_name: string;
+          artist_name: string;
+          album_name: string;
+          album_image: string;
+          audio: string;
+          duration: number;
+          position: number;
+          added_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          playlist_id: string;
+          track_id: string;
+          track_name: string;
+          artist_name: string;
+          album_name: string;
+          album_image: string;
+          audio: string;
+          duration: number;
+          position?: number;
+          added_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          playlist_id?: string;
+          track_id?: string;
+          track_name?: string;
+          artist_name?: string;
+          album_name?: string;
+          album_image?: string;
+          audio?: string;
+          duration?: number;
+          position?: number;
+          added_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

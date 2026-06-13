@@ -9,6 +9,7 @@ import { UsersModule } from '@users/users.module';
 import { MusicModule } from '@music/music.module';
 import { FavoritesModule } from '@favorites/favorites.module';
 import { HistoryModule } from './history/history.module';
+import { PlaylistsModule } from '@playlists/playlists.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { HistoryModule } from './history/history.module';
     MusicModule,
     FavoritesModule,
     HistoryModule,
+    PlaylistsModule,
   ],
   controllers: [],
   providers: [KeepAliveTask],
