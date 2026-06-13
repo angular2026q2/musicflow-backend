@@ -29,6 +29,7 @@
       "@favorites/*": ["src/favorites/*"],
       "@supabase/*": ["src/supabase/*"],
       "@common/*": ["src/common/*"],
+      "@playlists/*": ["src/playlists/*"],
       "@db-types/*": ["src/types/*"]
     }
   }
